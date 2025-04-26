@@ -33,7 +33,7 @@ The same goes for each component.`,
 	}
 
 	cmd.Flags().StringP("project", "p", ".", "The path to the gitlab CI component project")
-	cmd.Flags().StringP("output", "o", "README.md", "The path to the output file. Relative to the projet directory")
+	cmd.Flags().StringP("output", "o", "README.md", "The path to the output file. Relative to the project directory")
 
 	cmd.Flags().String("header", "HEADER.md", "File to prepended to the list of components")
 	cmd.Flags().String("footer", "FOOTER.md", "File to appended to the list of components")
@@ -42,6 +42,7 @@ The same goes for each component.`,
 	cmd.Flags().String("component-footer", "FOOTER.md", "File to appended on component. The file must exist in the component directory")
 
 	cmd.Flags().Int("component-header-level", 2, "The level of the header for each component")
+	cmd.Flags().Bool("generate-subcomponent-readmes", false, "Enable write a README.md to each component")
 
 	// bind flags to viper
 	viper.BindPFlag("project", cmd.Flags().Lookup("project"))
@@ -54,6 +55,7 @@ The same goes for each component.`,
 	viper.BindPFlag("component-footer", cmd.Flags().Lookup("component-footer"))
 
 	viper.BindPFlag("component-header-level", cmd.Flags().Lookup("component-header-level"))
+	viper.BindPFlag("generate-subcomponent-readmes", cmd.Flags().Lookup("generate-subcomponent-readmes"))
 
 	return cmd
 }
@@ -95,7 +97,27 @@ func generateReadme() error {
 			return err
 		}
 		// render markdown
-		sb.WriteString(c.Markdown())
+
+		if viper.GetBool("generate-subcomponent-readmes") {
+			var csb strings.Builder
+
+			// render markdown for component
+			csb.WriteString(c.Markdown(false))
+
+			// write generated markdown to component folder
+			err := os.WriteFile(filepath.Join(viper.GetString("project"), "templates", c.Name, viper.GetString("output")), []byte(strings.TrimSpace(csb.String())+"\n"), 0644)
+			if err != nil {
+				return err
+			}
+
+			// generate markdown for root README with hyperlinks to each component readme
+			sb.WriteString(c.Markdown(true))
+			continue
+		}
+
+		// generate markdown for root README without hyperlinks
+		sb.WriteString(c.Markdown(false))
+
 	}
 
 	if _, err := os.Stat(filepath.Join(viper.GetString("project"), viper.GetString("footer"))); err == nil {

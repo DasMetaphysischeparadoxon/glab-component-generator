@@ -142,7 +142,7 @@ type Component struct {
 	Spec   *ComponentSpec `yaml:"spec"`
 }
 
-func (c *Component) Markdown() string {
+func (c *Component) Markdown(isRoot bool) string {
 
 	if c.Header == "" && c.Footer == "" && c.Spec == nil {
 		return ""
@@ -151,7 +151,11 @@ func (c *Component) Markdown() string {
 	var md strings.Builder
 
 	// render component header
-	md.WriteString(fmt.Sprintf("%s %s\n\n", headerLevel(), c.Name))
+	if isRoot {
+		md.WriteString(fmt.Sprintf("%s %s\n\n", headerLevel(), fmt.Sprintf("[%s](templates/%s/README.md)", c.Name, c.Name)))
+	} else {
+		md.WriteString(fmt.Sprintf("%s %s\n\n", headerLevel(), c.Name))
+	}
 
 	if c.Header != "" {
 		md.WriteString(strings.TrimSpace(c.Header) + "\n\n")
