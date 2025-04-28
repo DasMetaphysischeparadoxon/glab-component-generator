@@ -102,7 +102,7 @@ func generateReadme() error {
 			var csb strings.Builder
 
 			// render markdown for component
-			csb.WriteString(c.Markdown(false))
+			csb.WriteString(c.Markdown(false, viper.GetString("output")))
 
 			// write generated markdown to component folder
 			err := os.WriteFile(filepath.Join(viper.GetString("project"), "templates", c.Name, viper.GetString("output")), []byte(strings.TrimSpace(csb.String())+"\n"), 0644)
@@ -111,12 +111,12 @@ func generateReadme() error {
 			}
 
 			// generate markdown for root README with hyperlinks to each component readme
-			sb.WriteString(c.Markdown(true))
+			sb.WriteString(c.Markdown(true, viper.GetString("output")))
 			continue
 		}
 
 		// generate markdown for root README without hyperlinks
-		sb.WriteString(c.Markdown(false))
+		sb.WriteString(c.Markdown(false, viper.GetString("output")))
 
 	}
 
