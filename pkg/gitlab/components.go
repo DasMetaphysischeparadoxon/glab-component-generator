@@ -142,7 +142,7 @@ type Component struct {
 	Spec   *ComponentSpec `yaml:"spec"`
 }
 
-func (c *Component) Markdown() string {
+func (c *Component) Markdown(isRoot bool, outputFilename string) string {
 
 	if c.Header == "" && c.Footer == "" && c.Spec == nil {
 		return ""
@@ -151,7 +151,15 @@ func (c *Component) Markdown() string {
 	var md strings.Builder
 
 	// render component header
-	md.WriteString(fmt.Sprintf("%s %s\n\n", headerLevel(), c.Name))
+	header := fmt.Sprintf("%s %s\n\n", headerLevel(), "%s")
+	if isRoot {
+		if outputFilename == "" {
+			outputFilename = "README.md"
+		}
+		md.WriteString(fmt.Sprintf(header, fmt.Sprintf("[%s](templates/%s/%s)", c.Name, c.Name, outputFilename)))
+	} else {
+		md.WriteString(fmt.Sprintf(header, c.Name))
+	}
 
 	if c.Header != "" {
 		md.WriteString(strings.TrimSpace(c.Header) + "\n\n")

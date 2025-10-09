@@ -213,7 +213,7 @@ spec:
 		component := &Component{Name: "Component test"}
 		yaml.Unmarshal([]byte(input), component)
 
-		assert.Equal(t, expected.String(), component.Markdown())
+		assert.Equal(t, expected.String(), component.Markdown(false, ""))
 
 	})
 
@@ -234,7 +234,7 @@ Some Header
 		component := &Component{Name: "Header test", Header: "Some Header"}
 		yaml.Unmarshal([]byte(input), component)
 
-		assert.Equal(t, expected.String(), component.Markdown())
+		assert.Equal(t, expected.String(), component.Markdown(false, ""))
 
 	})
 
@@ -256,7 +256,7 @@ Header
 		component := &Component{Name: "Header test", Header: "Some\nHeader\n"}
 		yaml.Unmarshal([]byte(input), component)
 
-		assert.Equal(t, expected.String(), component.Markdown())
+		assert.Equal(t, expected.String(), component.Markdown(false, ""))
 
 	})
 
@@ -275,7 +275,7 @@ Header
 		component := &Component{Name: "Footer test", Footer: "Some Footer"}
 		yaml.Unmarshal([]byte(input), component)
 
-		assert.Equal(t, expected.String(), component.Markdown())
+		assert.Equal(t, expected.String(), component.Markdown(false, ""))
 
 	})
 
@@ -296,7 +296,28 @@ Header
 		component := &Component{Name: "Header level test"}
 		yaml.Unmarshal([]byte(input), component)
 
-		assert.Equal(t, expected.String(), component.Markdown())
+		assert.Equal(t, expected.String(), component.Markdown(false, ""))
+
+	})
+
+	t.Run("test hyperlinks in root of document and write to output", func(t *testing.T) {
+
+		viper.Set("output", "test.md")
+
+		var expected strings.Builder
+		expected.WriteString(`### [hyperlink-test](templates/hyperlink-test/test.md)
+
+| Input / Variable | Description | Default value |
+| ---------------- | ----------- | ------------- |
+`)
+		expected.WriteString(fmt.Sprintf("| `job-prefix`     | Define a prefix for the job name | %c             |\n", '\U000026D4'))
+
+		expected.WriteString("\n")
+
+		component := &Component{Name: "hyperlink-test"}
+		yaml.Unmarshal([]byte(input), component)
+
+		assert.Equal(t, expected.String(), component.Markdown(true, viper.GetString("output")))
 
 	})
 
